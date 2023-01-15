@@ -1,0 +1,8 @@
+_target_: models.L_PrimalDual.L_PrimalDual
+
+image_size: ${default_hp.image_size}
+n_its: ${default_hp.n_its}
+n_primal: ${default_hp.n_primal}
+n_dual: ${default_hp.n_dual}
+
+lr: 0.0001
