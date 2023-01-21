@@ -37,7 +37,7 @@ class L_PrimalDual(LightningModule):
         
         operator = odl.tomo.RayTransform(self.space, geometry)
         self.fp_operator = odl_torch.OperatorModule(operator)
-        self.fbp_operator = odl_torch.OperatorModule(odl.tomo.fbp_op(operator))
+        self.fbp_operator = odl_torch.OperatorModule(operator.adjoint)
 
         self.lpd_model = LearnedPrimalDual(self.fp_operator, self.fbp_operator, n_iter=n_its, n_primal=n_primal, n_dual=n_dual)
 
