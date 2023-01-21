@@ -23,7 +23,6 @@ class SplitLayer(nn.Module):
             current_pos = l
         return tuple(chunks)
 
-
 class DualNet(nn.Module):
     def __init__(self, n_dual):
         super(DualNet, self).__init__()

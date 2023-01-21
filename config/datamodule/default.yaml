@@ -1,4 +1,5 @@
 _target_: dataLoader.CTDataModule.CTDataModule
 batch_size: 1
-data_dir: ${original_work_dir}/data/Training_Mayo_CT.npy
-ts_data_dir: ${original_work_dir}/data/Testing_Mayo_CT.npy
+data_dir: ${original_work_dir}/data/Train_Mayo_CT.npy
+vl_data_dir: ${original_work_dir}/data/Valid_Mayo_CT.npy
+ts_data_dir: ${original_work_dir}/data/Test_Mayo_CT.npy
