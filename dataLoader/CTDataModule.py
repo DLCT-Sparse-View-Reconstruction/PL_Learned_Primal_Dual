@@ -47,7 +47,7 @@ class CTDataModule(LightningDataModule):
 
             self.train_set, self.val_set, self.test_set = random_split(dataset[:dataset_size], [train_size, val_size, test_size])
         else:
-            self.train_set, self.val_set, self.test_set= dataset, valid_dataset, test_dataset
+            self.train_set, self.val_set, self.test_set = dataset[:1], valid_dataset[:1], test_dataset
 
     def train_dataloader(self):
         return DataLoader(self.train_set, batch_size=self.batch_size, shuffle = True, num_workers=self.num_workers)

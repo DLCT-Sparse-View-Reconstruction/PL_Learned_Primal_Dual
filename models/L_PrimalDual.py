@@ -39,7 +39,7 @@ class L_PrimalDual(LightningModule):
         self.fp_operator = odl_torch.OperatorModule(operator)
         self.fbp_operator = odl_torch.OperatorModule(operator.adjoint)
 
-        self.lpd_model = LearnedPrimalDual(self.fp_operator, self.fbp_operator, n_iter=n_its, n_primal=n_primal, n_dual=n_dual)
+        self.lpd_model = LearnedPrimalDual(operator, operator.adjoint, n_iter=n_its, n_primal=n_primal, n_dual=n_dual)
 
         self.criterion = nn.MSELoss()
 
@@ -86,7 +86,7 @@ class L_PrimalDual(LightningModule):
         step = self.step_random_choose()
         d_sparce = self.get_sparce_sinogram(y_true, step).type_as(y_true)
             
-        y = self(d_sparce)
+        y = self(d_sparce[None, ...])
 
         ######################
         # Optimize LEARN   #
@@ -106,7 +106,7 @@ class L_PrimalDual(LightningModule):
         step = self.step_random_choose()
         d_sparce = self.get_sparce_sinogram(y_true, step).type_as(y_true)
         
-        y = self.lpd_model(d_sparce)
+        y = self.lpd_model(d_sparce[None, ...])
         val_lpd_loss = self.LPD_loss(y, y_true[None, None, ...])
         
         self.log_dict({"val_lpd_loss": val_lpd_loss}, prog_bar=True, sync_dist=True)
@@ -117,28 +117,30 @@ class L_PrimalDual(LightningModule):
         
         step = self.step_random_choose()
         
-        d_sparce = self.get_sparce_sinogram(y_true, step).type_as(y_true)
+        for step in self.STEPS_CONFIGS:
+            d_sparce = self.get_sparce_sinogram(y_lqnm, step).type_as(y_lqnm)
         
-        with torch.no_grad():
-            self.eval()
-            y = self(d_sparce)
-            y_true = y_true[None, None, ...]
-            self.train()
+            with torch.no_grad():
+                self.eval()
+                y = self(d_sparce[None, ...])
+                y_true = y_true[None, None, ...]
+                self.train()
             
-            test_lpd_loss = self.LPD_loss(y, y_true)
+                test_lpd_loss = self.LPD_loss(y, y_true)
             
-            self.log_dict({"test_lpd_loss": test_lpd_loss}, prog_bar=True)
+                self.log_dict({"test_lpd_loss": test_lpd_loss}, prog_bar=True)
             
-            psnr_p, ssim_p, rmse_p = psnr(y, y_true).cpu(), ssim(y, y_true).cpu(), torch.sqrt(mse(y, y_true).cpu()) 
-            file_name = "results/test/LPD/{}/idx_{}_psnr={}_ssim={}_rmse={}.png".format(step, batch_idx, 
-                                                                                    psnr_p.numpy(), ssim_p.numpy(), rmse_p.numpy())
+                psnr_p, ssim_p, rmse_p = psnr(y, y_true).cpu(), ssim(y, y_true).cpu(), torch.sqrt(mse(y, y_true).cpu()) 
+                file_name = "results/test/LPD/{}/idx_{}_psnr={}_ssim={}_rmse={}.png".format(step, batch_idx, 
+                                                                                        psnr_p.numpy(), ssim_p.numpy(), rmse_p.numpy())
             
-            y = torch.rot90(torch.squeeze(y), 1)
-            save_image(y, file_name)             
+                y = torch.rot90(torch.squeeze(y), 1)
+                save_image(y, file_name)
+                y_true = torch.squeeze(y_true)
 
     def configure_optimizers(self):
         lr = self.hparams.lr
 
-        opt_lpd = torch.optim.Adam(self.learn_model.parameters(), lr=lr) 
+        opt_lpd = torch.optim.Adam(self.lpd_model.parameters(), lr=lr) 
 
         return opt_lpd

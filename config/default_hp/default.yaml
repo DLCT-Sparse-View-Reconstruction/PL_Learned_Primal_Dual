@@ -1,5 +1,5 @@
 image_size: 256
-n_its: 10
+n_its: 12
 n_primal: 5 
 n_dual: 5
 

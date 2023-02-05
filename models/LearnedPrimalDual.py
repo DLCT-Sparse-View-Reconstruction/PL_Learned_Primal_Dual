@@ -7,7 +7,7 @@ from models.PrimalDualNet import *
 
 class LearnedPrimalDual(nn.Module):
     def __init__(self,
-                forward_op, backward_op, n_iter, n_primal, n_dual
+                forward_op, backward_op, n_iter, n_primal, n_dual,
                 primal_architecture = PrimalNet,
                 dual_architecture = DualNet):
 
@@ -28,10 +28,6 @@ class LearnedPrimalDual(nn.Module):
         
         self.primal_nets = nn.ModuleList()
         self.dual_nets = nn.ModuleList()
-        
-        self.concatenate_layer = ConcatenateLayer()
-        self.primal_split_layer = SplitLayer([n_primal, n_dual, 1])
-        self.dual_split_layer = SplitLayer([n_primal, n_dual])
         
         for i in range(n_iter):
             self.primal_nets.append(
